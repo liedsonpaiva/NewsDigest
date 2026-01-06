@@ -4,12 +4,7 @@ import jakarta.persistence.*;
 
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
-@Table(
-        name = "news_sources",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "rss_url")
-        }
-)
+@Table(name = "news_sources",uniqueConstraints = {@UniqueConstraint(columnNames = "rss_url")})
 public class NewsSource {
 
     @Id

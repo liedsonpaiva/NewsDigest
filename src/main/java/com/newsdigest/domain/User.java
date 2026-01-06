@@ -7,12 +7,7 @@ import java.time.LocalTime;
 
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
-@Table(
-        name = "users",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email")
-        }
-)
+@Table(name = "users",uniqueConstraints = {@UniqueConstraint(columnNames = "email")})
 public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -21,7 +16,7 @@ public class User {
     @Column(nullable = false, length = 150)
     private String email;
 
-    @Column(name = "ativo", nullable = false)
+    @Column(name = "ativo", nullable = false, unique = true)
     private boolean ativo;
 
     @Column(name = "horario_envio", nullable = false)

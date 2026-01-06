@@ -1,6 +1,19 @@
 spring:
   application:
     name: newsdigest
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+
+  # MySQL Driver configs
+  datasource:
+    url: jdbc:mysql://localhost:3306/newsdigest?createDatabaseIfNotExist=true
+    username: root
+    password: 61457
+    driver-class-name: com.mysql.cj.jdbc.Driver
+
+  # JPA configs
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true

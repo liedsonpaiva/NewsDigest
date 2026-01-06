@@ -4,12 +4,7 @@ import jakarta.persistence.*;
 
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
-@Table(
-        name = "user_subscriptions",
-        uniqueConstraints = {
-                @UniqueConstraint(columnNames = {"user_id", "news_source_id"})
-        }
-)
+@Table(name = "user_subscriptions",uniqueConstraints = {@UniqueConstraint(columnNames = {"user_id", "news_source_id"})})
 public class UserSubscription {
 
     @Id
@@ -53,6 +48,13 @@ public class UserSubscription {
 
     public int getQuantidadeNoticias() {
         return quantidadeNoticias;
+    }
+
+    public void setQuantidadeNoticias(int quantidadeNoticias) {
+        if (quantidadeNoticias < 1 || quantidadeNoticias > 5) {
+            throw new IllegalArgumentException("QuantidadeNoticias deve estar entre 1 e 5");
+        }
+        this.quantidadeNoticias = quantidadeNoticias;
     }
 }
 

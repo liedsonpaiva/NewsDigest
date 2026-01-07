@@ -4,10 +4,9 @@ spring:
 
   # MySQL Driver configs
   datasource:
-    url: jdbc:mysql://localhost:3306/newsdigest?createDatabaseIfNotExist=true
-    username: root
-    password: 61457
-    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/newsdigest
+    username: ${DB_USER}
+    password: ${DB_PASSWORD}
 
   # JPA configs
   jpa:
@@ -17,3 +16,6 @@ spring:
     properties:
       hibernate:
         format_sql: true
+
+  profiles:
+    active: local

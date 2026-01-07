@@ -18,7 +18,7 @@ public class UserService {
         this.userRepository = userRepository;
     }
 
-    public User cadatrarUsuario (String email, LocalTime horarioEnvio) {
+    public User cadastrarUsuario (String email, LocalTime horarioEnvio) {
 
         Optional<User> existente = userRepository.findByEmail(email);
         if (existente.isPresent()) {

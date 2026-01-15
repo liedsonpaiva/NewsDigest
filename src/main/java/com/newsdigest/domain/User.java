@@ -25,6 +25,9 @@ public class User {
     @Column(name = "data_cadastro", nullable = false, updatable = false)
     private LocalDate dataCadastro;
 
+    @Column(name = "data_ultimo_envio_digest")
+    private LocalDate dataUltimoEnvioDigest;
+
     protected User() {
     }
 
@@ -33,6 +36,7 @@ public class User {
         this.ativo = ativo;
         this.horarioEnvio = horarioEnvio;
         this.dataCadastro = LocalDate.now();
+        this.dataUltimoEnvioDigest = null;
     }
 
     public Long getId() {
@@ -55,12 +59,20 @@ public class User {
         return dataCadastro;
     }
 
+    public LocalDate getDataUltimoEnvioDigest() {
+        return dataUltimoEnvioDigest;
+    }
+
     public void setAtivo(boolean ativo) {
         this.ativo = ativo;
     }
 
     public void setHorarioEnvio(LocalTime horarioEnvio) {
         this.horarioEnvio = horarioEnvio;
+    }
+
+    public void setDataUltimoEnvioDigest(LocalDate dataUltimoEnvioDigest) {
+        this.dataUltimoEnvioDigest = dataUltimoEnvioDigest;
     }
 
 }

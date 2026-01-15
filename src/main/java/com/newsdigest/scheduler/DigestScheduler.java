@@ -1,15 +1,20 @@
 package com.newsdigest.scheduler;
 
+import com.newsdigest.service.DigestDispatchService;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 
 @Component
 public class DigestScheduler {
 
-    @Scheduled(fixedRate = 300000) // 5 minutos
+    private final DigestDispatchService dispatchService;
+
+    public DigestScheduler(DigestDispatchService dispatchService) {
+        this.dispatchService = dispatchService;
+    }
+
+    @Scheduled(fixedRate = 300_000) // 5 minutos
     public void processDigests() {
-        // 1. buscar usuários ativos
-        // 2. filtrar por horário
-        // 3. delegar geração de digest
+        dispatchService.processPendingDigests();
     }
 }

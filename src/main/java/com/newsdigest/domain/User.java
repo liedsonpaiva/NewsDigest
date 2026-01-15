@@ -16,7 +16,7 @@ public class User {
     @Column(nullable = false, length = 150)
     private String email;
 
-    @Column(name = "ativo", nullable = false, unique = true)
+    @Column(name = "ativo", nullable = false)
     private boolean ativo;
 
     @Column(name = "horario_envio", nullable = false)

@@ -46,6 +46,10 @@ public class UserSubscription {
         return newsSource;
     }
 
+    public NewsSource getSource() {
+        return this.newsSource;
+    }
+
     public int getQuantidadeNoticias() {
         return quantidadeNoticias;
     }

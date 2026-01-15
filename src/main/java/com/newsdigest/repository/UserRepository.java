@@ -25,4 +25,6 @@ public interface UserRepository extends JpaRepository<User, Long> {
 
     List<User> findByAtivoTrueAndHorarioEnvioLessThanEqual(LocalTime now);
 
+    Optional<User> findByTokenCancelamento(String token);
+
 }

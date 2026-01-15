@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.UUID;
 
 //@JsonIdentityInfo(generator = ObjectIdGenerators.PropertyGenerator.class, property = "id")
 @Entity
@@ -28,6 +29,9 @@ public class User {
     @Column(name = "data_ultimo_envio_digest")
     private LocalDate dataUltimoEnvioDigest;
 
+    @Column(name = "token_de_cancelamento", unique = true)
+    private String tokenCancelamento;
+
     protected User() {
     }
 
@@ -37,6 +41,7 @@ public class User {
         this.horarioEnvio = horarioEnvio;
         this.dataCadastro = LocalDate.now();
         this.dataUltimoEnvioDigest = null;
+        this.tokenCancelamento = UUID.randomUUID().toString();
     }
 
     public Long getId() {
@@ -61,6 +66,10 @@ public class User {
 
     public LocalDate getDataUltimoEnvioDigest() {
         return dataUltimoEnvioDigest;
+    }
+
+    public String getTokenCancelamento() {
+        return tokenCancelamento;
     }
 
     public void setAtivo(boolean ativo) {

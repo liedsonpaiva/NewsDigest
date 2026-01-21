@@ -16,6 +16,7 @@ import java.util.List;
 public class RssParser {
 
     private static final String DEFAULT_IMAGE = "https://via.placeholder.com/300x200.png?text=News";
+    private static final int MAX_DESCRIPTION_LENGTH = 500; // tamanho máximo do resumo
 
     public List<RssItem> parse(InputStream xml) {
         try (InputStream input = xml) {
@@ -30,11 +31,13 @@ public class RssParser {
                 }
 
                 String image = extractImage(entry);
+                String description = extractDescription(entry);
 
                 items.add(new RssItem(
                         entry.getTitle(),
                         entry.getLink(),
-                        image
+                        image,
+                        description
                 ));
             }
 
@@ -46,7 +49,6 @@ public class RssParser {
     }
 
     private String extractImage(SyndEntry entry) {
-
         // 1. Media RSS (BBC, DW, etc.)
         Module module = entry.getModule(MediaEntryModule.URI);
         if (module instanceof MediaEntryModule media) {
@@ -62,5 +64,31 @@ public class RssParser {
 
         // 3. Placeholder final
         return DEFAULT_IMAGE;
+    }
+
+    private String extractDescription(SyndEntry entry) {
+        if (entry.getDescription() == null) return "";
+
+        String full = entry.getDescription().getValue();
+
+        // Remove qualquer tag <img>, <video>, <iframe> que possa aparecer
+        full = full.replaceAll("(?i)<(img|video|iframe)[^>]*>", "");
+
+        // Pega apenas o primeiro parágrafo real
+        String[] paragraphs = full.split("</p>|\\n|\\r"); // divide por parágrafo ou quebra de linha
+        for (String p : paragraphs) {
+            p = p.replaceAll("<[^>]+>", "").trim(); // limpa HTML residual
+            if (p.length() > 500) { // pega parágrafo com conteúdo “real”
+                full = p;
+                break;
+            }
+        }
+
+        // Limita o tamanho
+        if (full.length() > MAX_DESCRIPTION_LENGTH) {
+            full = full.substring(0, MAX_DESCRIPTION_LENGTH).trim() + "...";
+        }
+
+        return full;
     }
 }

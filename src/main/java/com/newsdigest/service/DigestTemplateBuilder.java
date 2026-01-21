@@ -30,31 +30,47 @@ public class DigestTemplateBuilder {
                 continue;
             }
 
-            html.append("<ul>");
             for (RssItem item : items) {
 
                 String imageUrl = item.getImageUrl() != null
                         ? item.getImageUrl()
                         : PLACEHOLDER_IMAGE;
 
-                html.append("<li>")
-                        .append("<img src=\"").append(imageUrl)
-                        .append("\" width=\"300\" height=\"200\">")
-                        .append("<br>")
-                        .append("<a href=\"").append(item.getLink())
-                        .append("\" target=\"_blank\">")
+                // Limpa imagens da descrição
+                String description = cleanDescription(item.getDescription());
+
+                html.append("<div style=\"margin-bottom:20px;\">");
+
+                // Título preto e clicável
+                html.append("<h3 style=\"color:black; font-size:16px; margin-bottom:5px;\"><a href=\"")
+                        .append(item.getLink())
+                        .append("\" target=\"_blank\" style=\"color:black; text-decoration:none;\">")
                         .append(item.getTitle())
-                        .append("</a>")
-                        .append("</li>");
+                        .append("</a></h3>");
+
+                // Imagem
+                html.append("<img src=\"")
+                        .append(imageUrl)
+                        .append("\" width=\"300\" height=\"200\" style=\"display:block; margin-bottom:10px;\"/>");
+
+                // Descrição limpa
+                html.append("<p>").append(description).append("</p>");
+
+                html.append("</div>");
             }
-            html.append("</ul>");
         }
 
         html.append("<hr>");
-        html.append("<a href=\"https://newsdigest.com/unsubscribe?token=")
+        html.append("<a href=\"http://localhost:8080/unsubscribe?token=")
                 .append(user.getTokenCancelamento())
                 .append("\">Descadastrar</a>");
 
         return html.toString();
+    }
+
+    // Remove todas as tags <img> da descrição
+    private String cleanDescription(String description) {
+        if (description == null) return "";
+        return description.replaceAll("(?i)<img[^>]*>", "");
     }
 }

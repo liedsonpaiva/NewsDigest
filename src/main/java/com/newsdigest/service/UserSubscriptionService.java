@@ -8,6 +8,7 @@ import com.newsdigest.repository.UserRepository;
 import com.newsdigest.repository.UserSubscriptionRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
@@ -47,7 +48,13 @@ public class UserSubscriptionService {
         return userSubscriptionRepository.findByUserId(userId);
     }
 
+    @Transactional
     public void remover(Long userId, Long newsSourceId) {
-        userSubscriptionRepository.deleteByUserIdAndNewsSourceId(userId, newsSourceId);
+        Optional<UserSubscription> subscription = userSubscriptionRepository.findByUserIdAndNewsSourceId(userId, newsSourceId);
+        if (subscription.isPresent()) {
+            userSubscriptionRepository.delete(subscription.get());
+        } else {
+            throw new IllegalArgumentException("Assinatura não encontrada");
+        }
     }
 }

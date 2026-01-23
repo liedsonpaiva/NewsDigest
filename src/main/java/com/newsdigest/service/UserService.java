@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -43,5 +44,16 @@ public class UserService {
 
     private User buscarPorId(Long id) {
         return userRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
+    }
+
+    public Optional<User> buscarUsuarioPorId(Long id) {
+        return userRepository.findById(id)
+                .filter(User::isAtivo);
+    }
+
+    public List<User> listarUsuarios() {
+        return userRepository.findAll().stream()
+                .filter(User::isAtivo)
+                .toList();
     }
 }

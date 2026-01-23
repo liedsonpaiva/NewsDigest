@@ -13,7 +13,7 @@ public class DigestScheduler {
         this.dispatchService = dispatchService;
     }
 
-    @Scheduled(fixedRate = 60000) // 1 minuto
+    @Scheduled(fixedRate = 10000000) //60.000 1 minuto
     public void processDigests() {
         dispatchService.processPendingDigests();
     }

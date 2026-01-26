@@ -22,161 +22,29 @@ import java.util.stream.Collectors;
 @Service
 public class DigestDispatchService {
 
-    private static final Logger log =
-            LoggerFactory.getLogger(DigestDispatchService.class);
-
     private final UserRepository userRepository;
-    private final UserSubscriptionRepository subscriptionRepository;
-    private final RssOrchestrator rssOrchestrator;
-    private final DigestTemplateBuilder templateBuilder;
-    private final EmailService emailService;
+    private final DigestEligibilityService eligibilityService;
+    private final UserDigestProcessor processor;
 
-    public DigestDispatchService(UserRepository userRepository,
-                                 UserSubscriptionRepository subscriptionRepository,
-                                 RssOrchestrator rssOrchestrator,
-                                 DigestTemplateBuilder templateBuilder,
-                                 EmailService emailService) {
+    public DigestDispatchService(
+            UserRepository userRepository,
+            DigestEligibilityService eligibilityService,
+            UserDigestProcessor processor) {
         this.userRepository = userRepository;
-        this.subscriptionRepository = subscriptionRepository;
-        this.rssOrchestrator = rssOrchestrator;
-        this.templateBuilder = templateBuilder;
-        this.emailService = emailService;
+        this.eligibilityService = eligibilityService;
+        this.processor = processor;
     }
 
-    // =========================
-    // Scheduler entry point
-    // =========================
     @Transactional
     public void processPendingDigests() {
+
         LocalTime now = LocalTime.now();
         LocalDate today = LocalDate.now();
 
-        log.info("Scheduler executando em: {}", now);
+        List<User> users = userRepository.findAll();
 
-        List<User> eligibleUsers = findEligibleUsers(now, today);
-
-        log.info("Usuários elegíveis para envio hoje: {}", eligibleUsers.size());
-
-        for (User user : eligibleUsers) {
-            processUserDigestSafe(user, today);
-        }
-    }
-
-    // =========================
-    // User processing (safe)
-    // =========================
-    private void processUserDigestSafe(User user, LocalDate today) {
-        try {
-            processUserDigest(user, today);
-        } catch (Exception e) {
-            log.error("Erro inesperado ao processar usuário {}", user.getEmail(), e);
-        }
-    }
-
-    // =========================
-    // Core business flow
-    // =========================
-    void processUserDigest(User user, LocalDate today) {
-        log.info("Processando usuário: {}", user.getEmail());
-
-        List<UserSubscription> subscriptions = findSubscriptions(user);
-        if (subscriptions.isEmpty()) {
-            log.info("Usuário {} não tem assinaturas. Pulando.", user.getEmail());
-            return;
-        }
-
-        List<NewsSource> sources = subscriptions.stream()
-                .map(UserSubscription::getSource)
-                .toList();
-
-        Map<NewsSource, List<RssItem>> feeds =
-                fetchFeedsSafely(user, sources);
-
-        Map<String, List<RssItem>> feedsByName =
-                mapFeedsBySourceName(feeds);
-
-        String html = templateBuilder.build(user, feedsByName);
-
-        sendDigestAndMarkAsSent(user, html, today);
-    }
-
-    // =========================
-    // Eligibility
-    // =========================
-    private List<User> findEligibleUsers(LocalTime now, LocalDate today) {
-        List<User> candidates =
-                userRepository.findByAtivoTrueAndHorarioEnvioLessThanEqual(now);
-
-        log.info("Usuários candidatos encontrados: {}", candidates.size());
-
-        return candidates.stream()
-                .filter(user -> isEligibleForToday(user, today))
-                .toList();
-    }
-
-    private boolean isEligibleForToday(User user, LocalDate today) {
-        return user.getDataUltimoEnvioDigest() == null
-                || !user.getDataUltimoEnvioDigest().isEqual(today);
-    }
-
-    // =========================
-    // Subscriptions
-    // =========================
-    private List<UserSubscription> findSubscriptions(User user) {
-        return subscriptionRepository.findByUser(user);
-    }
-
-    // =========================
-    // RSS
-    // =========================
-    private Map<NewsSource, List<RssItem>> fetchFeedsSafely(
-            User user,
-            List<NewsSource> sources) {
-
-        try {
-            return rssOrchestrator.fetchAll(sources, 5);
-        } catch (Exception e) {
-            log.error("Erro ao buscar RSS para usuário {}", user.getEmail(), e);
-            return Map.of();
-        }
-    }
-
-    private Map<String, List<RssItem>> mapFeedsBySourceName(
-            Map<NewsSource, List<RssItem>> feeds) {
-
-        return feeds.entrySet().stream()
-                .collect(Collectors.toMap(
-                        entry -> entry.getKey().getNome(),
-                        Map.Entry::getValue
-                ));
-    }
-
-    // =========================
-    // Sending + idempotency hook
-    // =========================
-    private void sendDigestAndMarkAsSent(
-            User user,
-            String html,
-            LocalDate today) {
-
-        try {
-            emailService.sendHtml(
-                    user.getEmail(),
-                    "Your News Digest",
-                    html
-            );
-
-            user.setDataUltimoEnvioDigest(today);
-            userRepository.save(user);
-
-            log.info(
-                    "E-mail enviado e dataUltimoEnvioDigest atualizada para {} (usuário {})",
-                    today,
-                    user.getEmail()
-            );
-
-        } catch (Exception e) {
-            log.error("Erro ao enviar e-mail para {}", user.getEmail(), e);
-        }
+        users.stream()
+                .filter(user -> eligibilityService.isEligible(user, now, today))
+                .forEach(user -> processor.process(user, today));
     }
 }

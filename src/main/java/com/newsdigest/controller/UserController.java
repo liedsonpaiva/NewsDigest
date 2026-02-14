@@ -1,6 +1,7 @@
 package com.newsdigest.controller;
 
 import com.newsdigest.domain.User;
+import com.newsdigest.dto.ApiResponse;
 import com.newsdigest.dto.CreateUserRequest;
 import com.newsdigest.dto.UpdateUserHorarioRequest;
 import com.newsdigest.dto.UserResponse;
@@ -24,52 +25,79 @@ public class UserController {
         this.userService = userService;
     }
 
-    // GET por ID
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponse> buscarUsuarioPorId(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<UserResponse>> buscarUsuarioPorId(@PathVariable Long id) {
         return userService.buscarUsuarioPorId(id)
-                .map(user -> ResponseEntity.ok(UserResponse.fromEntity(user)))
-                .orElseGet(() -> ResponseEntity.notFound().build());
+                .map(user -> ResponseEntity.ok(
+                        new ApiResponse<>(true, "Usuário encontrado", UserResponse.fromEntity(user))
+                ))
+                .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                        new ApiResponse<>(false, "Usuário não encontrado", null)
+                ));
     }
 
-    // GET todos os usuários ativos
     @GetMapping
-    public ResponseEntity<List<UserResponse>> listarUsuarios() {
+    public ResponseEntity<ApiResponse<List<UserResponse>>> listarUsuarios() {
         List<UserResponse> usuarios = userService.listarUsuarios().stream()
                 .map(UserResponse::fromEntity)
                 .toList();
-        return ResponseEntity.ok(usuarios);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(true, "Lista de usuários", usuarios)
+        );
     }
 
     @PostMapping
-    public ResponseEntity<UserResponse> cadastrarUsuario(@RequestBody CreateUserRequest request) {
+    public ResponseEntity<ApiResponse<UserResponse>> cadastrarUsuario(@RequestBody CreateUserRequest request) {
         try {
             User user = userService.cadastrarUsuario(request.getEmail(), request.getHorarioEnvio());
-            return ResponseEntity.status(HttpStatus.CREATED).body(UserResponse.fromEntity(user));
+
+            return ResponseEntity.status(HttpStatus.CREATED).body(
+                    new ApiResponse<>(true, "Usuário cadastrado com sucesso", UserResponse.fromEntity(user))
+            );
+
         } catch (IllegalArgumentException e) {
             log.warn("Erro ao cadastrar usuário: {}", e.getMessage());
-            return ResponseEntity.badRequest().build();
+
+            return ResponseEntity.status(HttpStatus.CONFLICT).body(
+                    new ApiResponse<>(false, e.getMessage(), null)
+            );
         }
     }
 
     @PutMapping("/{id}/horario")
-    public ResponseEntity<Void> alterarHorarioEnvio(@PathVariable Long id, @RequestBody UpdateUserHorarioRequest request) {
+    public ResponseEntity<ApiResponse<Void>> alterarHorarioEnvio(
+            @PathVariable Long id,
+            @RequestBody UpdateUserHorarioRequest request) {
+
         try {
             userService.alterarHorarioEnvio(id, request.getHorarioEnvio());
-            return ResponseEntity.noContent().build();
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, "Horário atualizado com sucesso", null)
+            );
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, e.getMessage(), null)
+            );
         }
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> desativarUsuario(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Void>> desativarUsuario(@PathVariable Long id) {
+
         try {
             userService.desativarUsuario(id);
-            return ResponseEntity.noContent().build();
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(true, "Usuário desativado com sucesso", null)
+            );
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.notFound().build();
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(
+                    new ApiResponse<>(false, e.getMessage(), null)
+            );
         }
     }
 }
-

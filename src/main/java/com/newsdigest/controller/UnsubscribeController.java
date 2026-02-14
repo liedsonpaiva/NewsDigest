@@ -2,6 +2,7 @@ package com.newsdigest.controller;
 
 import com.newsdigest.domain.User;
 import com.newsdigest.repository.UserRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -22,12 +23,17 @@ public class UnsubscribeController {
 
     @GetMapping
     public ResponseEntity<String> unsubscribe(@RequestParam("token") String token) {
+
         return userRepository.findByTokenCancelamento(token)
                 .map(user -> {
                     user.setAtivo(false);
                     userRepository.save(user);
                     return ResponseEntity.ok("Você foi descadastrado com sucesso do NewsDigest.");
                 })
-                .orElseGet(() -> ResponseEntity.badRequest().body("Token inválido ou usuário não encontrado."));
+                .orElseGet(() ->
+                        ResponseEntity.status(HttpStatus.NOT_FOUND)
+                                .body("Token inválido ou usuário não encontrado.")
+                );
     }
+
 }

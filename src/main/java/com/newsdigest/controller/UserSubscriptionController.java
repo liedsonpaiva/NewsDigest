@@ -1,6 +1,6 @@
 package com.newsdigest.controller;
 
-import com.newsdigest.domain.UserSubscription;
+import com.newsdigest.dto.ApiResponse;
 import com.newsdigest.dto.CreateUserSubscriptionRequest;
 import com.newsdigest.dto.UserSubscriptionResponse;
 import com.newsdigest.service.UserSubscriptionService;
@@ -24,26 +24,78 @@ public class UserSubscriptionController {
     }
 
     @PostMapping
-    public ResponseEntity<Void> inscrever(@PathVariable Long userId, @RequestBody CreateUserSubscriptionRequest request) {
+    public ResponseEntity<ApiResponse<Void>> inscrever(
+            @PathVariable Long userId,
+            @RequestBody CreateUserSubscriptionRequest request) {
+
         try {
-            service.inscrever(userId, request.getNewsSourceId(), request.getQuantidadeNoticias());
-            return ResponseEntity.status(HttpStatus.CREATED).build();
+            service.inscrever(
+                    userId,
+                    request.getNewsSourceId(),
+                    request.getQuantidadeNoticias()
+            );
+
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .body(new ApiResponse<>(
+                            true,
+                            "Inscrição realizada com sucesso",
+                            null
+                    ));
+
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.badRequest().build();
+
+            log.warn("Erro ao inscrever usuário: {}", e.getMessage());
+
+            return ResponseEntity.badRequest()
+                    .body(new ApiResponse<>(
+                            false,
+                            e.getMessage(),
+                            null
+                    ));
         }
     }
 
     @GetMapping
-    public ResponseEntity<List<UserSubscriptionResponse>> listar(@PathVariable Long userId) {
+    public ResponseEntity<ApiResponse<List<UserSubscriptionResponse>>> listar(
+            @PathVariable Long userId) {
+
         List<UserSubscriptionResponse> response = service.listar(userId).stream()
                 .map(UserSubscriptionResponse::fromEntity)
                 .toList();
-        return ResponseEntity.ok(response);
+
+        return ResponseEntity.ok(
+                new ApiResponse<>(
+                        true,
+                        "Lista de inscrições",
+                        response
+                )
+        );
     }
 
     @DeleteMapping("/{newsSourceId}")
-    public ResponseEntity<Void> remover(@PathVariable Long userId, @PathVariable Long newsSourceId) {
-        service.remover(userId, newsSourceId);
-        return ResponseEntity.noContent().build();
+    public ResponseEntity<ApiResponse<Void>> remover(
+            @PathVariable Long userId,
+            @PathVariable Long newsSourceId) {
+
+        try {
+            service.remover(userId, newsSourceId);
+
+            return ResponseEntity.ok(
+                    new ApiResponse<>(
+                            true,
+                            "Inscrição removida com sucesso",
+                            null
+                    )
+            );
+
+        } catch (IllegalArgumentException e) {
+
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .body(new ApiResponse<>(
+                            false,
+                            e.getMessage(),
+                            null
+                    ));
+        }
     }
 }

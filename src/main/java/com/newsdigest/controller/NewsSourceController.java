@@ -71,15 +71,13 @@ public class NewsSourceController {
             @RequestBody CreateNewsSourceRequest request) {
 
         NewsSource source = newsSourceService.criarFonte(
+                request.getId(),
                 request.getNome(),
-                request.getRssUrl()
+                request.getRssUrl(),
+                request.getLogoUrl()
         );
 
         return ResponseEntity.status(HttpStatus.CREATED)
-                .body(new ApiResponse<>(
-                        true,
-                        "Fonte criada com sucesso",
-                        NewsSourceResponse.fromEntity(source)
-                ));
+                .body(new ApiResponse<>(true, "Fonte criada com sucesso", NewsSourceResponse.fromEntity(source)));
     }
 }

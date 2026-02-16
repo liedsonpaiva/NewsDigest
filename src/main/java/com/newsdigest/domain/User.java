@@ -24,7 +24,7 @@ public class User {
     private LocalTime horarioEnvio;
 
     @Column(name = "data_cadastro", nullable = false, updatable = false)
-    private LocalDate dataCadastro;
+    private LocalDate dataCadastro
 
     @Column(name = "data_ultimo_envio_digest")
     private LocalDate dataUltimoEnvioDigest;

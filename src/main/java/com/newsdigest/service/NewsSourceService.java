@@ -25,8 +25,9 @@ public class NewsSourceService {
         return newsSourceRepository.findById(id).orElseThrow(() -> new IllegalArgumentException("Fonte não encontrada"));
     }
 
-    public NewsSource criarFonte(String nome, String rssUrl) {
-        NewsSource source = new NewsSource(nome, rssUrl, true);
+    public NewsSource criarFonte(Long id, String nome, String rssUrl, String logoUrl) {
+        NewsSource source = new NewsSource(id, nome, rssUrl, true, logoUrl);
         return newsSourceRepository.save(source);
     }
+
 }

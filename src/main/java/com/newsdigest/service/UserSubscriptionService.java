@@ -31,6 +31,8 @@ public class UserSubscriptionService {
 
         User user = userRepository.findById(userId).orElseThrow(() -> new IllegalArgumentException("Usuário não encontrado"));
 
+        if (!user.isAtivo()) {throw new IllegalArgumentException("Usuário desativado. Não é possível realizar novas assinaturas.");}
+
         NewsSource source = newsSourceRepository.findById(newsSourceId).orElseThrow(() -> new IllegalArgumentException("Fonte não encontrada"));
 
         boolean jaExiste = userSubscriptionRepository.existsByUserAndNewsSource(user, source);

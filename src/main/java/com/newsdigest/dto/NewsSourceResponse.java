@@ -5,28 +5,28 @@ import com.newsdigest.domain.NewsSource;
 public class NewsSourceResponse {
 
     private Long id;
-    private String nome;
-    private String rssUrl;
-    private boolean ativo;
-
-    public NewsSourceResponse(Long id, String nome, String rssUrl, boolean ativo) {
-        this.id = id;
-        this.nome = nome;
-        this.rssUrl = rssUrl;
-        this.ativo = ativo;
-    }
+    private String name;
+    private boolean active;
+    private String logoUrl;
 
     public static NewsSourceResponse fromEntity(NewsSource source) {
-        return new NewsSourceResponse(
-                source.getId(),
-                source.getNome(),
-                source.getRssUrl(),
-                source.isAtivo()
-        );
+        NewsSourceResponse dto = new NewsSourceResponse();
+        dto.id = source.getId();
+        dto.name = source.getNome();
+        dto.active = source.isAtivo();
+        dto.logoUrl = source.getLogoUrl();
+        return dto;
     }
 
+    // GETTERS OBRIGATÓRIOS para o JSON
     public Long getId() { return id; }
-    public String getNome() { return nome; }
-    public String getRssUrl() { return rssUrl; }
-    public boolean isAtivo() { return ativo; }
+    public String getName() { return name; }
+    public boolean isActive() { return active; }
+    public String getLogoUrl() { return logoUrl; }
+
+    // Setters (opcionais)
+    public void setId(Long id) { this.id = id; }
+    public void setName(String name) { this.name = name; }
+    public void setActive(boolean active) { this.active = active; }
+    public void setLogoUrl(String logoUrl) { this.logoUrl = logoUrl; }
 }
